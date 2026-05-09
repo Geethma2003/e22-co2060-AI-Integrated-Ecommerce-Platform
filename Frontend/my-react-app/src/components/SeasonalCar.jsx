@@ -27,27 +27,37 @@ const TrendingProductsShowcase = () => {
   // Fetch trending products
   useEffect(() => {
     const fetchTrending = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/trending`, {
-          cache: "no-store",
-          headers: {
-            "Pragma": "no-cache",
-            "Cache-Control": "no-cache"
+      // Try relative first (for Docker/Production), then absolute (for Local Dev)
+      const urls = [`${API_BASE_URL}/api/trending`, "http://localhost:3000/api/trending"];
+      
+      for (const url of urls) {
+        try {
+          const response = await fetch(url, {
+            cache: "no-store",
+            headers: {
+              "Pragma": "no-cache",
+              "Cache-Control": "no-cache"
+            }
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (Array.isArray(data) && data.length > 0) {
+              setTrendingData(data.slice(0, 3));
+              return; // Exit if successful
+            }
           }
-        });
-        if (!response.ok) {
-          throw new Error("Failed to fetch trending products");
+        } catch (error) {
+          console.warn(`Failed to fetch from ${url}:`, error.message);
         }
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setTrendingData(data.slice(0, 3));
-        }
-      } catch (error) {
-        console.error("Error fetching trending data:", error);
+      }
+
+      // Final fallback if all else fails
+      if (trendingData.length === 0) {
         setTrendingData([
-          { Keyword: "Portable Cooler" },
-          { Keyword: "Beach Umbrella" },
-          { Keyword: "Seasonal Car" },
+          { Keyword: "iPhone 15 Pro", image: null },
+          { Keyword: "Gaming Laptop", image: null },
+          { Keyword: "Smart TV", image: null },
         ]);
       }
     };
@@ -64,9 +74,17 @@ const TrendingProductsShowcase = () => {
   const product2 = trendingData[1] || { Keyword: "Loading..." };
   const product3 = trendingData[2] || { Keyword: "Loading..." };
 
-  // Placehold.co - remove text from URL to avoid duplication
-  const getSmallImg = (keyword) => `https://placehold.co/400x400/00c3ff/ffffff?text=${encodeURIComponent(keyword)}`;
-  const getLargeImg = (keyword) => `https://placehold.co/800x800/111111/ffffff?text=${encodeURIComponent(keyword)}`;
+  // Image handling with fallback
+  const getProductImg = (product, size = "small") => {
+    if (product.image && product.image !== "/images/default-product.png") {
+      // If it's a relative path, we might need to prepend base URL if it's served by the backend
+      // But assuming standard relative/absolute URLs work as is or are full URLs.
+      return product.image;
+    }
+    const color = size === "large" ? "111111" : "00c3ff";
+    const dim = size === "large" ? "800x800" : "400x400";
+    return `https://placehold.co/${dim}/${color}/ffffff?text=${encodeURIComponent(product.Keyword || "Trending")}`;
+  };
 
   return (
     <section
@@ -96,9 +114,9 @@ const TrendingProductsShowcase = () => {
           >
             <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
             <img
-              src={getSmallImg(product1.Keyword)}
+              src={getProductImg(product1, "small")}
               alt={product1.Keyword}
-              className="w-32 h-32 object-contain mb-4 rounded-lg shadow-inner brightness-110"
+              className="w-56 h-56 object-contain mb-4 rounded-lg brightness-110 group-hover:scale-110 transition-transform duration-500"
             />
             <p className="font-bold text-xl text-white tracking-wide">
               {product1.Keyword}
@@ -114,9 +132,9 @@ const TrendingProductsShowcase = () => {
           >
             <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
             <img
-              src={getSmallImg(product2.Keyword)}
+              src={getProductImg(product2, "small")}
               alt={product2.Keyword}
-              className="w-32 h-32 object-contain mb-4 rounded-lg shadow-inner brightness-110"
+              className="w-56 h-56 object-contain mb-4 rounded-lg brightness-110 group-hover:scale-110 transition-transform duration-500"
             />
             <p className="font-bold text-xl text-white tracking-wide">
               {product2.Keyword}
@@ -133,9 +151,9 @@ const TrendingProductsShowcase = () => {
         >
           <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
           <img
-            src={getLargeImg(product3.Keyword)}
+            src={getProductImg(product3, "large")}
             alt={product3.Keyword}
-            className="w-[85%] object-contain rounded-2xl shadow-2xl mb-8 group-hover:scale-105 transition-transform duration-500"
+            className="w-[90%] h-[70%] object-contain rounded-2xl shadow-2xl mb-8 group-hover:scale-110 transition-transform duration-500"
           />
 
           <div className="absolute top-6 right-6 bg-white text-black px-5 py-2 rounded-full text-sm font-extrabold shadow-2xl tracking-tighter uppercase">
