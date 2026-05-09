@@ -32,7 +32,7 @@ import "./cron/graphRebuildJob.js";
 // ================== CONFIG ==================
 dotenv.config();
 
-const PORT = 3000; // Forced to 3000 to match Nginx proxy config
+const PORT = process.env.PORT || 8080; 
 
 const mongoURI =
   process.env.MONGO_URI ||
@@ -51,7 +51,7 @@ const allowedOrigins = [
   process.env.FRONTEND_URL,
   "http://localhost:5173",
   "https://localhost:5173",
-  "http://localhost:3000"
+  "http://localhost:8080"
 ].filter(Boolean);
 
 app.use(

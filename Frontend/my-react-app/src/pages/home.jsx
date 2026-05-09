@@ -27,33 +27,102 @@ export default function Home() {
     try {
       const stored = localStorage.getItem("user");
       return stored ? JSON.parse(stored) : null;
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   });
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [isSeller, setIsSeller] = useState(false);
+  const [isSeller, setIsSeller] = useState(() => {
+    try {
+      const stored = localStorage.getItem("user");
+      const parsed = stored ? JSON.parse(stored) : null;
+      return parsed?.role === "seller";
+    } catch {
+      return false;
+    }
+  });
 
-  // ✅ Check if current user has a registered seller account
-  // Re-runs when user changes (e.g. after login navigates here)
+  // Keep navbar auth state synced with localStorage updates (login/logout/token refresh).
+  useEffect(() => {
+    const syncUserFromStorage = () => {
+      try {
+        const stored = localStorage.getItem("user");
+        setUser(stored ? JSON.parse(stored) : null);
+      } catch {
+        setUser(null);
+      }
+    };
+
+    window.addEventListener("storage", syncUserFromStorage);
+    window.addEventListener("focus", syncUserFromStorage);
+
+    return () => {
+      window.removeEventListener("storage", syncUserFromStorage);
+      window.removeEventListener("focus", syncUserFromStorage);
+    };
+  }, []);
+
+  // ✅ Check seller status using dedicated endpoint (never 403 for non-seller users).
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token || !user) {
+    if (!token) {
+      console.debug("[SellerStatus] no token; skip check", { source: "home" });
       setIsSeller(false);
       return;
     }
 
-    fetch(`${API_BASE_URL}/api/sellers/me`, {
-      headers: { Authorization: `Bearer ${token}` },
+    console.debug("[SellerStatus] checking status", {
+      source: "home",
+      hasUser: Boolean(user),
+    });
+
+    fetch(`${API_BASE_URL}/api/sellers/check-status`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+      },
+      cache: "no-store",
     })
-      .then((res) => {
-        if (res.ok) setIsSeller(true);
-        else setIsSeller(false);
+      .then(async (res) => {
+        console.debug("[SellerStatus] response", {
+          source: "home",
+          status: res.status,
+        });
+
+        if (!res.ok) {
+          setIsSeller(user?.role === "seller");
+          return;
+        }
+
+        const status = await res.json().catch(() => null);
+        if (!status) return;
+
+        console.debug("[SellerStatus] data", {
+          source: "home",
+          isSeller: status.isSeller,
+          hasSellerProfile: status.hasSellerProfile,
+          role: status.role,
+        });
+
+        setUser((prev) => {
+          if (!prev) return prev;
+          if (status.role && prev.role !== status.role) {
+            const updated = { ...prev, role: status.role };
+            localStorage.setItem("user", JSON.stringify(updated));
+            return updated;
+          }
+          return prev;
+        });
+
+        setIsSeller(Boolean(status.isSeller));
       })
       .catch((err) => {
-        console.warn("Seller check failed (may be HTTPS proxy issue):", err.message);
-        setIsSeller(false);
+        console.warn("[SellerStatus] check failed (home)", err.message);
+        setIsSeller(user?.role === "seller");
       });
-  }, [user]);
+  }, [user?.email]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
