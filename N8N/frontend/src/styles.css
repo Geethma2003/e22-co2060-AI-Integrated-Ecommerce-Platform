@@ -1,0 +1,150 @@
+:root {
+  font-family: "Segoe UI", Arial, sans-serif;
+  color: #f8fafc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #050b2e, #081a4a, #020617);
+}
+
+.page {
+  min-height: 100vh;
+  padding: 28px 16px;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 22px;
+}
+
+.hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.hero h1 {
+  margin: 10px 0 8px;
+  font-size: 2rem;
+}
+
+.hero p {
+  margin: 0;
+  color: #cbd5e1;
+  max-width: 700px;
+}
+
+.pill {
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(125, 211, 252, 0.15);
+  color: #7dd3fc;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.platform-card .accent {
+  height: 8px;
+  border-radius: 999px;
+}
+
+.platform-card .accent.facebook {
+  background: linear-gradient(to right, #2563eb, #1d4ed8);
+}
+
+.platform-card .accent.instagram {
+  background: linear-gradient(to right, #d946ef, #ec4899);
+}
+
+.platform-card .accent.tiktok {
+  background: linear-gradient(to right, #06b6d4, #8b5cf6);
+}
+
+.platform-card h2 {
+  margin: 16px 0 10px;
+}
+
+.platform-card p {
+  margin: 0;
+  color: #cbd5e1;
+  min-height: 50px;
+}
+
+.status {
+  margin-top: 12px;
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.status.live {
+  background: rgba(34, 197, 94, 0.18);
+  color: #4ade80;
+}
+
+.primary-btn,
+.ghost-btn {
+  margin-top: 14px;
+  display: inline-flex;
+  text-decoration: none;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.primary-btn {
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+.ghost-btn {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.metric p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.84rem;
+  text-transform: uppercase;
+}
+
+.metric strong {
+  margin-top: 10px;
+  display: block;
+  font-size: 1.8rem;
+}
+
+.error {
+  color: #fecaca;
+  border-color: rgba(239, 68, 68, 0.35);
+  margin-bottom: 16px;
+}

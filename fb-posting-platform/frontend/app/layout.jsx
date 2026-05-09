@@ -1,8 +1,8 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "FB Auto Publisher",
-  description: "Automatic Facebook page post publishing"
+  title: "Social Media Platform Dashboard",
+  description: "Manage Facebook, Instagram, and TikTok workspaces from one dashboard"
 };
 
 export default function RootLayout({ children }) {

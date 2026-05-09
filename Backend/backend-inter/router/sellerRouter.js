@@ -7,6 +7,7 @@ import {
   updateSellerProfile,
   getSellerById,
 } from "../controllers/sellerController.js";
+import { getSellerMarketingPlatforms } from "../controllers/sellerMarketingController.js";
 import { getSellerDashboardStats } from "../controllers/sellerDashboardController.js";
 import { getSellerRestockPriorities } from "../controllers/sellerRestockController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -54,6 +55,14 @@ router.get("/dashboard/stats", authMiddleware, requireSeller, getSellerDashboard
  * ======================================================
  */
 router.get("/restock/priorities", authMiddleware, requireSeller, getSellerRestockPriorities);
+
+/**
+ * ======================================================
+ * SELLER SOCIAL MARKETING DASHBOARD
+ * GET /api/sellers/marketing/platforms
+ * ======================================================
+ */
+router.get("/marketing/platforms", authMiddleware, requireSeller, getSellerMarketingPlatforms);
 
 /**
  * ======================================================

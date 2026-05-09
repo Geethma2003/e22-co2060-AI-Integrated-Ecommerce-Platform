@@ -1,7 +1,20 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import userModel from "../models/user.js";
-import admin from "../config/firebaseAdmin.js"; // Use the fixed admin SDK
+import admin, { isFirebaseSandbox } from "../config/firebaseAdmin.js"; // Firebase Admin SDK (+ sandbox flag)
+
+function decodeJwtPayload(token) {
+  try {
+    const parts = token.split(".");
+    if (parts.length < 2) return null;
+    const payload = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = payload + "==".slice(0, (4 - (payload.length % 4)) % 4);
+    const json = Buffer.from(padded, "base64").toString("utf8");
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
 
 export function createFirebaseLogin({
   userRepo,
@@ -22,18 +35,30 @@ export function createFirebaseLogin({
       const idToken = authHeader.split(" ")[1];
       console.log("🔑 [Login] Verifying Firebase Token...");
 
-      // STEP 1: Verify the token using the OFFICIAL Admin SDK
-      // This is much faster and more reliable than manual JWT verification.
+      // STEP 1: Verify the token using the Firebase Admin SDK.
+      // In local Docker/dev where Firebase credentials are not provided, allow a
+      // sandbox fallback that *decodes* the JWT payload without signature verification.
+      // This keeps the platform usable for demos while still enforcing real verification
+      // when credentials exist.
       let decodedToken;
-      try {
-        decodedToken = await admin.auth().verifyIdToken(idToken);
-        console.log("✅ [Login] Token Verified for:", decodedToken.email);
-      } catch (verifyErr) {
-        console.error("❌ [Login] Firebase token verification failed:", verifyErr.message);
-        return res.status(401).json({
-          message: "Invalid or expired Firebase token",
-          detail: verifyErr.message
-        });
+
+      if (isFirebaseSandbox && process.env.NODE_ENV !== "production") {
+        decodedToken = decodeJwtPayload(idToken);
+        if (!decodedToken) {
+          return res.status(401).json({ message: "Invalid Firebase token format" });
+        }
+        console.warn("⚠️ [Login] Firebase sandbox mode: skipping signature verification");
+      } else {
+        try {
+          decodedToken = await admin.auth().verifyIdToken(idToken);
+          console.log("✅ [Login] Token Verified for:", decodedToken.email);
+        } catch (verifyErr) {
+          console.error("❌ [Login] Firebase token verification failed:", verifyErr.message);
+          return res.status(401).json({
+            message: "Invalid or expired Firebase token",
+            detail: verifyErr.message,
+          });
+        }
       }
 
       const email = decodedToken.email;

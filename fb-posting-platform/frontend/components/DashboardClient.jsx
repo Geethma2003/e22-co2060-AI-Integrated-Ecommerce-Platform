@@ -112,8 +112,8 @@ export default function DashboardClient() {
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-6">
       <div className="rounded-xl bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold">Facebook Auto Publisher</h1>
-        <p className="text-sm text-slate-600">Connect pages, schedule posts, and monitor delivery status.</p>
+        <h1 className="text-2xl font-semibold">Facebook Workspace</h1>
+        <p className="text-sm text-slate-600">Connect pages, schedule posts, and monitor publishing status.</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">

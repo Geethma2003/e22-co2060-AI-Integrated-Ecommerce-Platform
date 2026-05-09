@@ -23,6 +23,7 @@ import restockRouter from "./router/restockRouter.js"; // 🤖 Restock Priority 
 import recommendationRouter from "./router/recommendationRouter.js"; // 🧭 Dijkstra Recommendations
 import dmsRouter from "./dms/routes/dmsRouter.js"; // 🚚 Enterprise Delivery Management System
 import trendingRouter from "./router/trendingRouter.js"; // 📈 YouTube Trending
+import n8nRouter from "./router/n8nRouter.js"; // 🔄 N8N Workflow Management
 
 
 // ================== CRON JOBS ==================
@@ -140,6 +141,10 @@ app.use("/api/admin/restock", restockRouter);
 app.use("/api/recommendations", recommendationRouter);
 // 🚚 Delivery Management System
 app.use("/api/dms", dmsRouter);
+
+// 🔄 N8N Workflow Management (controlled from main platform)
+app.use("/api/n8n", n8nRouter);
+
 if ((process.env.ENABLE_FACEBOOK_MODULE || "false").toLowerCase() === "true") {
   const { default: facebookRouter } = await import("./router/facebookRouter.js");
   app.use("/api/facebook", facebookRouter);

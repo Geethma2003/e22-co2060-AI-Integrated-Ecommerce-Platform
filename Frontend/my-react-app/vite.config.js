@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import basicSsl from '@vitejs/plugin-basic-ssl'
+// import basicSsl from '@vitejs/plugin-basic-ssl'
 
 // https://vite.dev/config/
 // NOTE: HTTPS is required so mobile browsers treat the LAN connection as a
@@ -11,7 +11,7 @@ import basicSsl from '@vitejs/plugin-basic-ssl'
 export default defineConfig({
   plugins: [
     react(),
-    basicSsl()
+    // basicSsl()  // Disabled for local development - use http://localhost:5173
   ],
   server: {
     host: '0.0.0.0',

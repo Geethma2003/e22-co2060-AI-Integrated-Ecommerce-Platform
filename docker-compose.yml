@@ -143,7 +143,7 @@ services:
       PORT: 8080
 
       JWT_SECRET: ${JWT_SECRET:-change-this-jwt-secret-in-production}
-      FRONTEND_URL: https://localhost:5173
+      FRONTEND_URL: http://localhost:5173
       ENABLE_FACEBOOK_MODULE: ${ENABLE_FACEBOOK_MODULE:-false}
       FACE_RECOGNITION_ENABLED: "false"
       FACE_SERVICE_URL: http://face-service:5000

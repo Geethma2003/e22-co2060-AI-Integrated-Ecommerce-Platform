@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "nodemon index.js",
+    "dev": "nodemon index.js",
     "worker:facebook": "node worker/facebookPublisherWorker.js",
     "test:login": "node --test tests/firebaseLogin.test.js",
     "seed:user": "node scripts/seedTestUser.js",

@@ -15,6 +15,9 @@ import VerifySellerEmail from "./pages/VerifySellerEmail";
 import CreateSellerOffer from "./pages/CreateSellerOffer";
 import MySellerOffers from "./pages/MySellerOffers";
 import SellerMarketingScheduler from "./pages/SellerMarketingScheduler";
+import SellerSocialDashboard from "./pages/SellerSocialDashboard";
+import SellerInstagramPage from "./pages/SellerInstagramPage";
+import SellerTikTokPage from "./pages/SellerTikTokPage";
 import Chatbot from "./components/Chatbot";
 import CartWidget from "./components/CartWidget";
 import CreateProduct from "./pages/CreateProduct";
@@ -71,7 +74,10 @@ function App() {
           <Route path="/seller/dashboard" element={<SellerDashboard />} />
           <Route path="/seller/orders/qr" element={<SellerOrderQr />} />
           <Route path="/seller/restock" element={<SellerRestock />} />
+          <Route path="/seller/social-dashboard" element={<SellerSocialDashboard />} />
           <Route path="/seller/marketing-scheduler" element={<SellerMarketingScheduler />} />
+          <Route path="/seller/marketing/instagram" element={<SellerInstagramPage />} />
+          <Route path="/seller/marketing/tiktok" element={<SellerTikTokPage />} />
 
           {/* Seller Offer Management */}
           <Route path="/seller/offers" element={<MySellerOffers />} />

@@ -7,6 +7,6 @@ RUN npm ci --no-audit --no-fund
 
 COPY . .
 
-EXPOSE 3000
+EXPOSE 8080
 
 CMD ["node", "index.js"]

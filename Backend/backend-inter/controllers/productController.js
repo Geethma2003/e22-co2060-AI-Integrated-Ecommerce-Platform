@@ -2,6 +2,7 @@ import productModel from "../models/products.js";
 import sellerOfferModel from "../models/sellerOffer.js";
 import TopProduct from "../models/topProducts.js";
 import ProductVariant from "../models/productVariant.js";
+import { postProductToFacebook } from "../services/facebookProductService.js";
 
 /**
  * ======================================================
@@ -18,6 +19,15 @@ export async function createProduct(req, res) {
       brand: req.body.brand,
       specs: req.body.specs
     });
+
+    // Auto-post to Facebook if enabled
+    if ((process.env.AUTO_POST_TO_FACEBOOK || "false").toLowerCase() === "true") {
+      try {
+        await postProductToFacebook(product);
+      } catch (fbError) {
+        console.warn("⚠️ Facebook post failed (non-blocking):", fbError.message);
+      }
+    }
 
     res.status(201).json({
       message: "Product created successfully",
