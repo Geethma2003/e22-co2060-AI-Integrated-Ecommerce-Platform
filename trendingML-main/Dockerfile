@@ -7,7 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN useradd --create-home --shell /usr/sbin/nologin appuser \
+RUN useradd --create-home --shell /bin/false appuser \
     && chown -R appuser:appuser /app
 
 USER appuser
