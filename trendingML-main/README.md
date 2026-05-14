@@ -76,7 +76,13 @@ python run_daily_pipeline.py
 
 ```bash
 docker build -t trendingml .
-docker run trendingml
+docker run --rm -p 8000:8000 trendingml
+```
+
+Then open:
+
+```bash
+http://localhost:8000/
 ```
 
 ## Pipeline Workflow
