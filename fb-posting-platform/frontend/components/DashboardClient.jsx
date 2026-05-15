@@ -1,258 +1,182 @@
-"use client";
+const keyMetrics = [
+  {
+    label: "Posts Scheduled",
+    value: "128",
+    delta: "+12 this week",
+    accent: "from-cyan-500 to-blue-500"
+  },
+  {
+    label: "Published Today",
+    value: "17",
+    delta: "+5 vs yesterday",
+    accent: "from-emerald-500 to-lime-500"
+  },
+  {
+    label: "Avg. Engagement",
+    value: "6.4%",
+    delta: "+0.8% this month",
+    accent: "from-orange-500 to-amber-500"
+  },
+  {
+    label: "Active Pages",
+    value: "7",
+    delta: "1 needs re-auth",
+    accent: "from-sky-600 to-cyan-500"
+  }
+];
 
-import { useEffect, useMemo, useState } from "react";
-import { api } from "../lib/api";
+const campaignTimeline = [
+  {
+    title: "Weekend Flash Sale",
+    page: "AutoNew Store",
+    slot: "Today, 7:30 PM",
+    state: "Scheduled",
+    color: "bg-emerald-100 text-emerald-700"
+  },
+  {
+    title: "Top 5 Gadgets This Month",
+    page: "Tech Trends Hub",
+    slot: "Tomorrow, 10:00 AM",
+    state: "Scheduled",
+    color: "bg-emerald-100 text-emerald-700"
+  },
+  {
+    title: "New Arrival Reel",
+    page: "Fashion Loop",
+    slot: "Tomorrow, 1:00 PM",
+    state: "Needs Review",
+    color: "bg-amber-100 text-amber-700"
+  },
+  {
+    title: "Customer Story Carousel",
+    page: "AutoNew Store",
+    slot: "Sun, 6:00 PM",
+    state: "Draft",
+    color: "bg-slate-200 text-slate-700"
+  }
+];
 
-function StatusBadge({ status }) {
-  const cls =
-    status === "published"
-      ? "bg-green-100 text-green-800"
-      : status === "failed"
-        ? "bg-red-100 text-red-800"
-        : "bg-amber-100 text-amber-800";
-  return <span className={`rounded px-2 py-1 text-xs font-semibold ${cls}`}>{status}</span>;
-}
+const channelMix = [
+  { name: "Image Posts", percent: 42, tone: "bg-blue-600" },
+  { name: "Reels", percent: 31, tone: "bg-cyan-500" },
+  { name: "Stories", percent: 19, tone: "bg-amber-500" },
+  { name: "Text Updates", percent: 8, tone: "bg-slate-500" }
+];
+
+const activityFeed = [
+  "AutoNew Store connected successfully",
+  "Post 'Weekend Flash Sale' moved to queue",
+  "Token refresh required for Page 'Vintage Finds'",
+  "Campaign report exported by admin@autonew.lk"
+];
 
 export default function DashboardClient() {
-  const [pages, setPages] = useState([]);
-  const [selectedPages, setSelectedPages] = useState([]);
-  const [posts, setPosts] = useState([]);
-  const [loadingPages, setLoadingPages] = useState(false);
-  const [form, setForm] = useState({ pageId: "", content: "", linkUrl: "", scheduledAt: "" });
-  const [file, setFile] = useState(null);
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
-
-  const preview = useMemo(() => {
-    const hashtags = form.content
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, "")
-      .split(/\s+/)
-      .filter((w) => w.length > 4)
-      .slice(0, 3)
-      .map((w) => `#${w}`)
-      .join(" ");
-    return `${form.content}${hashtags ? `\n\n${hashtags}` : ""}${form.linkUrl ? `\n${form.linkUrl}` : ""}`;
-  }, [form.content, form.linkUrl]);
-
-  async function loadPosts() {
-    const data = await api("/api/posts");
-    setPosts(data.posts);
-  }
-
-  async function loadSelectedPages() {
-    const data = await api("/api/facebook/pages/selected");
-    setSelectedPages(data.pages.map((p) => p.pageId));
-  }
-
-  useEffect(() => {
-    loadPosts().catch(() => {});
-    loadSelectedPages().catch(() => {});
-  }, []);
-
-  async function connectFacebook() {
-    const data = await api("/api/facebook/connect");
-    window.location.href = data.url;
-  }
-
-  async function fetchPages() {
-    setLoadingPages(true);
-    setError("");
-    try {
-      const data = await api("/api/facebook/pages");
-      setPages(data.pages);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoadingPages(false);
-    }
-  }
-
-  async function savePages() {
-    await api("/api/facebook/pages/select", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pages: selectedPages })
-    });
-    setMessage("Pages saved");
-    await loadSelectedPages();
-  }
-
-  async function createPost(e) {
-    e.preventDefault();
-    setError("");
-    setMessage("");
-    try {
-      const body = new FormData();
-      body.append("pageId", form.pageId);
-      body.append("content", form.content);
-      body.append("scheduledAt", form.scheduledAt);
-      if (form.linkUrl) body.append("linkUrl", form.linkUrl);
-      if (file) body.append("image", file);
-      await api("/api/posts", { method: "POST", body });
-      setForm({ pageId: "", content: "", linkUrl: "", scheduledAt: "" });
-      setFile(null);
-      await loadPosts();
-      setMessage("Post scheduled");
-    } catch (err) {
-      setError(err.message);
-    }
-  }
-
-  async function generateCaption() {
-    if (!form.content.trim()) return;
-    const data = await api("/api/posts/ai-caption", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ seed: form.content })
-    });
-    setForm((old) => ({ ...old, content: data.caption }));
-  }
-
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-6">
-      <div className="rounded-xl bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold">Facebook Auto Publisher</h1>
-        <p className="text-sm text-slate-600">Connect pages, schedule posts, and monitor delivery status.</p>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <section className="rounded-xl bg-white p-6 shadow-sm">
-          <h2 className="mb-3 font-semibold">Facebook Connection</h2>
-          <div className="flex gap-2">
-            <button onClick={connectFacebook} className="rounded bg-blue-600 px-3 py-2 text-white">
-              Connect Facebook
-            </button>
-            <button
-              onClick={fetchPages}
-              className="rounded border border-slate-300 px-3 py-2"
-              disabled={loadingPages}
-            >
-              {loadingPages ? "Loading..." : "Load Pages"}
-            </button>
-          </div>
-          <div className="mt-4 space-y-2">
-            {pages.map((p) => (
-              <label key={p.id} className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={selectedPages.includes(p.id)}
-                  onChange={(e) =>
-                    setSelectedPages((old) =>
-                      e.target.checked ? [...old, p.id] : old.filter((id) => id !== p.id)
-                    )
-                  }
-                />
-                {p.name}
-              </label>
-            ))}
-            {pages.length > 0 && (
-              <button onClick={savePages} className="mt-2 rounded bg-slate-900 px-3 py-2 text-white">
-                Save Selected Pages
-              </button>
-            )}
-          </div>
-        </section>
-
-        <section className="rounded-xl bg-white p-6 shadow-sm">
-          <h2 className="mb-3 font-semibold">Create Scheduled Post</h2>
-          <form onSubmit={createPost} className="space-y-3">
-            {selectedPages.length === 0 && (
-              <p className="rounded bg-amber-100 p-2 text-sm text-amber-800">
-                Select and save at least one page before scheduling posts.
+    <main className="min-h-screen px-4 py-6 sm:px-6 lg:px-10">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+        <header className="animate-fade-slide-up rounded-3xl border border-blue-100 bg-white/90 p-6 shadow-[0_18px_50px_-30px_rgba(14,61,130,0.55)] backdrop-blur">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-700">Facebook Publishing Hub</p>
+              <h1 className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">Dashboard Overview</h1>
+              <p className="mt-2 text-sm text-slate-600">
+                Welcome back, <span className="font-semibold text-slate-900">autonew</span>. Your campaign health is looking strong.
               </p>
-            )}
-            <select
-              className="w-full rounded border p-2"
-              value={form.pageId}
-              onChange={(e) => setForm((old) => ({ ...old, pageId: e.target.value }))}
-              required
-            >
-              <option value="">Select page</option>
-              {pages
-                .filter((p) => selectedPages.includes(p.id))
-                .map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} ({p.id})
-                  </option>
-                ))}
-            </select>
-            <textarea
-              className="h-28 w-full rounded border p-2"
-              placeholder="Post content"
-              value={form.content}
-              onChange={(e) => setForm((old) => ({ ...old, content: e.target.value }))}
-              required
-            />
-            <div className="flex gap-2">
+            </div>
+            <div className="flex flex-wrap gap-2">
               <button
                 type="button"
-                className="rounded border border-slate-300 px-3 py-2 text-sm"
-                onClick={generateCaption}
+                className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100"
               >
-                AI Caption
+                Connect Page
+              </button>
+              <button
+                type="button"
+                className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Open Scheduler
+              </button>
+              <button
+                type="button"
+                className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+              >
+                + New Campaign
               </button>
             </div>
-            <input
-              className="w-full rounded border p-2"
-              placeholder="Optional link URL"
-              value={form.linkUrl}
-              onChange={(e) => setForm((old) => ({ ...old, linkUrl: e.target.value }))}
-            />
-            <input
-              className="w-full rounded border p-2"
-              type="file"
-              accept="image/*"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
-            />
-            <input
-              className="w-full rounded border p-2"
-              type="datetime-local"
-              value={form.scheduledAt}
-              onChange={(e) => setForm((old) => ({ ...old, scheduledAt: e.target.value }))}
-              required
-            />
-            <button className="rounded bg-indigo-600 px-3 py-2 text-white">Schedule Post</button>
-          </form>
-          <div className="mt-4 rounded border bg-slate-50 p-3">
-            <p className="mb-2 text-xs font-semibold uppercase text-slate-500">Preview</p>
-            <p className="whitespace-pre-wrap text-sm">{preview}</p>
+          </div>
+        </header>
+
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {keyMetrics.map((metric, index) => (
+            <article
+              key={metric.label}
+              className="animate-fade-slide-up rounded-2xl border border-slate-200 bg-white/90 p-5 shadow-[0_10px_30px_-22px_rgba(15,23,42,0.8)]"
+              style={{ animationDelay: `${index * 70}ms` }}
+            >
+              <div className={`h-1.5 w-24 rounded-full bg-gradient-to-r ${metric.accent}`} />
+              <p className="mt-4 text-sm font-medium text-slate-600">{metric.label}</p>
+              <p className="mt-2 text-3xl font-bold text-slate-900">{metric.value}</p>
+              <p className="mt-2 text-xs font-medium text-slate-500">{metric.delta}</p>
+            </article>
+          ))}
+        </section>
+
+        <section className="grid gap-4 xl:grid-cols-[1.5fr_1fr]">
+          <article className="animate-fade-slide-up rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-[0_12px_35px_-22px_rgba(15,23,42,0.75)]">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-slate-900">Campaign Timeline</h2>
+              <span className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-700">Next 48 hours</span>
+            </div>
+            <div className="space-y-3">
+              {campaignTimeline.map((post) => (
+                <div
+                  key={`${post.title}-${post.slot}`}
+                  className="flex flex-col gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div>
+                    <p className="font-semibold text-slate-900">{post.title}</p>
+                    <p className="text-sm text-slate-600">
+                      {post.page} • {post.slot}
+                    </p>
+                  </div>
+                  <span className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold ${post.color}`}>{post.state}</span>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <div className="grid gap-4">
+            <article className="animate-fade-slide-up rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-[0_12px_35px_-22px_rgba(15,23,42,0.75)]">
+              <h3 className="text-xl font-bold text-slate-900">Content Mix</h3>
+              <p className="mt-1 text-sm text-slate-600">Distribution across Facebook formats</p>
+              <div className="mt-5 space-y-3">
+                {channelMix.map((item) => (
+                  <div key={item.name}>
+                    <div className="mb-1 flex items-center justify-between text-sm">
+                      <span className="font-medium text-slate-700">{item.name}</span>
+                      <span className="font-semibold text-slate-900">{item.percent}%</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-slate-100">
+                      <div className={`h-2 rounded-full ${item.tone}`} style={{ width: `${item.percent}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </article>
+
+            <article className="animate-fade-slide-up rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-[0_12px_35px_-22px_rgba(15,23,42,0.75)]">
+              <h3 className="text-xl font-bold text-slate-900">Live Activity</h3>
+              <ul className="mt-4 space-y-3">
+                {activityFeed.map((event) => (
+                  <li key={event} className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                    {event}
+                  </li>
+                ))}
+              </ul>
+            </article>
           </div>
         </section>
       </div>
-
-      <section className="rounded-xl bg-white p-6 shadow-sm">
-        <h2 className="mb-3 font-semibold">Posts</h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="py-2">Page</th>
-                <th className="py-2">Content</th>
-                <th className="py-2">Scheduled</th>
-                <th className="py-2">Status</th>
-                <th className="py-2">Error</th>
-              </tr>
-            </thead>
-            <tbody>
-              {posts.map((post) => (
-                <tr key={post.id} className="border-b align-top">
-                  <td className="py-2">{post.page.pageName}</td>
-                  <td className="max-w-sm py-2">{post.content}</td>
-                  <td className="py-2">{new Date(post.scheduledAt).toLocaleString()}</td>
-                  <td className="py-2">
-                    <StatusBadge status={post.status} />
-                  </td>
-                  <td className="py-2 text-red-600">{post.errorMessage || "-"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {error && <p className="rounded bg-red-100 p-3 text-sm text-red-700">{error}</p>}
-      {message && <p className="rounded bg-green-100 p-3 text-sm text-green-700">{message}</p>}
-    </div>
+    </main>
   );
 }

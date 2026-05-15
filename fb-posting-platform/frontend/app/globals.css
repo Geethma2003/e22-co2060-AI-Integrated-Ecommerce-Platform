@@ -2,6 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap");
+
 body {
-  @apply bg-slate-50 text-slate-900;
+  background:
+    radial-gradient(circle at 8% 10%, rgba(34, 211, 238, 0.2), transparent 28%),
+    radial-gradient(circle at 92% 80%, rgba(59, 130, 246, 0.16), transparent 34%),
+    linear-gradient(180deg, #f8fbff 0%, #edf4ff 55%, #e7f0ff 100%);
+  color: #082245;
+  font-family: "Outfit", "Segoe UI", sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: "Space Grotesk", "Segoe UI", sans-serif;
+}
+
+@keyframes fade-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-slide-up {
+  animation: fade-slide-up 500ms ease-out both;
 }
